@@ -14,6 +14,11 @@ It can use the following applications to notify users, apart from system-notific
 For multiple products search, notification window won't show up until all the products have been reported to be in stock.
 However, availibilty of each product will be notified individually by the system-notification, terminal and the apps chosen by the users.
 
+###Requirements
+
+Ensure that you have zenity installed.
+
+If you are plannig to use firefox, mplayer or chrome, make sure that they are installed.
 
 ###Usage
 
