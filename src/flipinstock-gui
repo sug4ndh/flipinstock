@@ -1,0 +1,272 @@
+#! /bin/sh
+
+################################################################################################
+#
+# Flipinstock lets you track a product's availability status on Flipkart. Developed especially
+# for the purpose, when the product is out of stock and there is a huge demand for it.
+# If the product is out of stock, it informs the user when it gets available. Whenever the 
+# product gets available it notifies the user, by the method that the user has chosen, and
+# terminates.
+# 
+# ##############################################################################################
+
+fire=1					#flag for opening firefox
+music=1					#flag for opening mplayer
+google=0				#flag for opening chrome
+musicselected=0			#flag that checks whether user has selected mplayer in the select apps dialog
+TARRAY=()				#temporary array that contains out of stock products link 
+TRY='mprod-buy-btn'		#pattern that is used to search whether the product is in stock or not
+
+# Creating log files for the submitted links and for the time when products are found to be in stock
+>submittedlinks.log
+>time.log				
+
+
+selectmusic(){
+	#Opens a selection window for audio file, if the user has selected mplayer
+	if [[ $music == 1 ]] ; then
+		zenity --info \
+		--title="Flipinstock" \
+		--no-wrap \
+		--text="Please select audio file with short time duration.\nFew short audio files are present in flipinstock directory."
+		
+		FILE=`zenity --file-selection --title="Select a Music File for alarm tone"`
+
+		case $? in
+			0)	
+				musicselected=1
+				echo "\"$FILE\" selected.";;
+			1)
+				zenity --info \
+				--title="Flipinstock" \
+				--text="Proceeding without Music file."
+				echo "No file selected.";;
+			-1)
+				echo "An unexpected error has occurred.";;
+		esac
+		
+	fi
+}
+
+selectsleeptime(){
+	#Opens a radiolist selection window for choosing time interval to check the product on Flipkart. Default is 5 sec.
+	ans=$(zenity --list --title "Select the time interval" --text "How frequently do you want the program to check the product on Flipkart?" --height 400 --width 400 --radiolist --column "Pick" \
+	--column "Applications" FALSE "2 sec" TRUE "5 sec" FALSE "10 sec"\
+	 FALSE "20 sec" FALSE "30 sec" FALSE "1 min" FALSE "2 min" FALSE "5 min" FALSE "10 min" \
+	 FALSE "20 min" FALSE "30 min" FALSE "1 hour" FALSE "2 hour" FALSE "5 hour")
+	if [ $? -eq 1 ] ; then
+		exit
+	else
+		case $ans in
+        "2 sec")
+			timer=2
+            echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "5 sec")
+			timer=5
+            echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "10 sec")
+			timer=10
+            echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "20 sec")
+			timer=20
+            echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "30 sec")
+			timer=30
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "1 min")
+			timer=60
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "2 min")
+			timer=120
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "5 min")
+			timer=300
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "10 min")
+			timer=600
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "20 min")
+			timer=1200
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "30 min")
+			timer=1800
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "1 hour")
+			timer=3600
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "2 hour")
+			timer=7200
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+        "5 hour")
+			timer=18000
+			echo timer set to $timer sec
+            echo This program will search for your Flipkart query every $timer seconds.;;
+		esac
+	fi
+
+}
+
+selectapps(){
+	# Opens a checklist window to select the applications	
+	ans=$(zenity --list --height 350 --width 500 --title "Select applications" --text "Which applications do you want to use?\
+	\nYou can select multiple options.\n\n \
+	Firefox and chrome will open the product page when it becomes available\n\ \
+	Mplayer will play a media file when the product becomes available.\n \
+	Choosing no options here, would give the notification by system-notification\n\tand the terminal in which you are running the script.\n\n" --checklist --column "Pick" \
+	--column "Applications" TRUE "firefox" TRUE "mplayer" FALSE "chrome")
+
+	if [ $? -eq 1 ] ; then
+		exit
+	else
+		if [[ $ans == *firefox* ]] ; then
+			fire=1
+		else fire=0
+		fi
+		#echo $fire
+		if [[ $ans == *mplayer* ]] ; then
+			music=1
+		else music=0
+		fi
+		#echo $music
+		if [[ $ans == *chrome* ]] ; then
+			google=1
+		else google=0
+		fi
+		#echo $google
+	fi
+}
+
+askforurl(){
+	# Asks for the url of the product page on flikart
+	result=$(zenity --entry --height 50 --width 600\
+	--title='Enter the url' \
+	--text='Enter the url of the Flipkart product'
+	)
+}
+
+displayinfo(){
+	# Displays information 
+	zenity --info \
+	--no-wrap \
+	--title="Flipinstock" \
+	--text="Flipinstock lets you track a product\'s availability status on Flipkart.\nDeveloped especially for the purpose, when the product is out of\nstock and there is a huge demand for it.\nIf the product is out of stock, it informs you when the product gets\navailable.\n\n\Whenever the product gets available, it notifies you, by the method\nthat you have chosen, and terminates when all the products have\nbeen reported to be in stock.\n\n It can use the following applications to notify you, apart from\nsystem-notification and terminal:\n
+	- Firefox\n\t- Mplayer\n\t- Google Chrome\n\nFor multiple products search, notification window won't show up\nuntil all the products have been reported to be in stock.\nHowever, availibilty of each product will be notified individually by the\nsystem-notification, terminal and the apps chosen by you.
+	"
+    
+}   
+
+# Calling displayinfo
+displayinfo
+# Calling selectapps
+selectapps
+# Calling selectsleeptime
+selectsleeptime
+#flip=http://www.flipkart.com
+# Calling selctmusic
+selectmusic
+# Calling askforurl
+askforurl
+
+if [ $? -eq 1 ] ; then
+	exit
+fi
+# Defining an array with the first url given by user
+declare -a urlary=($result)
+# Logging the first url
+echo $result > submittedlinks.log
+
+# Displaying error when users does not inputs the first url
+if [[ "${#urlary[@]}"  == 0 ]] ; then
+	echo No url specified. Exiting!
+	zenity --info \
+	--no-wrap \
+	--title="Flipinstock" \
+	--text="No url was specified. Exiting!"
+	exit
+fi
+
+# Asking for more urls if the user wishes to
+while true; do
+	zenity --question \
+		--text='Do you wish to track more products?'
+	if [ $? -eq 0 ] ; then
+		askforurl
+#On cancelling	
+		if [ $? -eq 1 ] ; then
+			break
+		fi
+		urlary+=($result)
+		# Logging the urls
+		echo $result >> submittedlinks.log
+	else
+		echo Finding....
+		notify-send -i face-wink -t 4000\
+		"Flipinstock" \
+		"Your products will be checked every $timer seconds.
+You will be notified when it gets available."
+		break
+	fi
+done
+
+# Checking for the product availabilty 
+while true; do
+	for i in ${urlary[@]}; do 
+		result=`curl -s $i`
+		if (echo $result | grep $TRY > /dev/null 2>&1); then
+			notify-send "Flipinstock" "Your product came in stock just now!"
+			echo ++++++++++++YOUR PRODUCT IS IN STOCK++++++++++++++++++++
+			if [[ $fire == 1 ]] ; then
+				/usr/bin/firefox $i & > /dev/null 2>&1
+			fi
+			
+			if [[ $google == 1 ]] ; then
+				/opt/google/chrome/google-chrome $i & > /dev/null 2>&1
+			fi
+			
+			if [ $music == 1 ] && [ $musicselected == 1 ] ; then
+				/usr/bin/mplayer -quiet $FILE > /dev/null 2>&1
+			fi
+			# Logging the timestamp
+			echo $i found to be availabe at --- $(date) >> time.log  
+		else
+			# Populating TARRAY with products still out of stock
+			TARRAY+=($i)
+			echo ------------------Out of stock----------------------
+		fi
+	done
+	# Emptying urlary and poupulating it with only out of stock products, contained in TARRAY 
+	urlary=()
+	urlary=("${TARRAY[@]}")
+	# Emptying TARRAY
+	TARRAY=()
+
+	# Dispalying info dialog when all the products have been found to be in stock
+	if [[ "${#urlary[@]}"  == 0 ]] ; then
+		sleep 1
+		zenity --info \
+		--no-wrap \
+		--title="Flipinstock" \
+		--text="Finished Execution!\n\nAll your products were found to be In stock.\n\nIf you have selected a browser, then the respective pages\nof the products have been opened in that browser.\n\nYou can check the time.log file in the flipinstock directory\nto view when the products were available.\n\nHurry, before they get Out of Stock again!"
+		exit
+	fi
+
+	# Time interval for fetching the product page
+	sleep $timer
+
+done
+
+
+
