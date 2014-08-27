@@ -28,7 +28,8 @@ However, availibilty of each product will be notified individually by the system
 
 + Fill up the info requested by the app, like the url of the product, select the apps to notify you and then sit back and enjoy. Flipinstock will notify you when your product gets available on Flipkart.
 
-+ Alternatively, you can download the zip file from [here](https://github.com/sug4ndh/flipinstock/archive/master.zip)
++ Alternatively, you can download the zip file from [here](https://github.com/sug4ndh/flipinstock/archive/master.zip). Extract it and then execute the 'flipinstock-gui' file inside the 'src' directory with bash.
+
 	
 + E.g. If you have downloaded the zip file inside the ~/Downloads directory then run this command
 	
