@@ -16,9 +16,9 @@ However, availibilty of each product will be notified individually by the system
 
 ###Requirements
 
-Ensure that you have zenity installed.
+Please ensure that you have zenity installed.
 
-If you are plannig to use firefox, mplayer or chrome, make sure that they are installed.
+If you are plannig to use firefox, mplayer or chrome, please make sure that they are installed.
 
 ###Usage
 
