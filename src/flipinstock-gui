@@ -11,8 +11,9 @@
 # ##############################################################################################
 
 fire=1					#flag for opening firefox
-music=1					#flag for opening mplayer
+music=0					#flag for opening mplayer
 google=0				#flag for opening chrome
+paply=1					#flag for playing music with paplay
 musicselected=0			#flag that checks whether user has selected mplayer in the select apps dialog
 TARRAY=()				#temporary array that contains out of stock products link 
 TRY='mprod-buy-btn'		#pattern that is used to search whether the product is in stock or not
@@ -24,7 +25,7 @@ TRY='mprod-buy-btn'		#pattern that is used to search whether the product is in s
 
 selectmusic(){
 	#Opens a selection window for audio file, if the user has selected mplayer
-	if [[ $music == 1 ]] ; then
+	if [ $music == 1 ] || [ $paply == 1 ] ; then
 		zenity --info \
 		--title="Flipinstock" \
 		--no-wrap \
@@ -50,7 +51,7 @@ selectmusic(){
 
 selectsleeptime(){
 	#Opens a radiolist selection window for choosing time interval to check the product on Flipkart. Default is 5 sec.
-	ans=$(zenity --list --title "Select the time interval" --text "How frequently do you want the program to check the product on Flipkart?" --height 400 --width 400 --radiolist --column "Pick" \
+	ans=$(zenity --list --title "Select the time interval" --text "How frequently do you want the program to check the product on Flipkart?" --height 500 --width 500 --radiolist --column "Pick" \
 	--column "Applications" FALSE "2 sec" TRUE "5 sec" FALSE "10 sec"\
 	 FALSE "20 sec" FALSE "30 sec" FALSE "1 min" FALSE "2 min" FALSE "5 min" FALSE "10 min" \
 	 FALSE "20 min" FALSE "30 min" FALSE "1 hour" FALSE "2 hour" FALSE "5 hour")
@@ -121,12 +122,13 @@ selectsleeptime(){
 
 selectapps(){
 	# Opens a checklist window to select the applications	
-	ans=$(zenity --list --height 350 --width 500 --title "Select applications" --text "Which applications do you want to use?\
+	ans=$(zenity --list --height 500 --width 500 --title "Select applications" --text "Which applications do you want to use?\
 	\nYou can select multiple options.\n\n \
 	Firefox and chrome will open the product page when it becomes available\n\ \
 	Mplayer will play a media file when the product becomes available.\n \
+	Paplay plays only .wav and .ogg files.\n \
 	Choosing no options here, would give the notification by system-notification\n\tand the terminal in which you are running the script.\n\n" --checklist --column "Pick" \
-	--column "Applications" TRUE "firefox" TRUE "mplayer" FALSE "chrome")
+	--column "Applications" TRUE "firefox" TRUE "paplay" FALSE "mplayer" FALSE "chrome")
 
 	if [ $? -eq 1 ] ; then
 		exit
@@ -136,6 +138,10 @@ selectapps(){
 		else fire=0
 		fi
 		#echo $fire
+		if [[ $ans == *paplay* ]] ; then
+			paply=1
+		else paply=0
+		fi
 		if [[ $ans == *mplayer* ]] ; then
 			music=1
 		else music=0
@@ -234,6 +240,10 @@ while true; do
 			
 			if [[ $google == 1 ]] ; then
 				/opt/google/chrome/google-chrome $i & > /dev/null 2>&1
+			fi
+			
+			if [ $paply == 1 ] && [ $musicselected == 1 ] ; then
+				paplay $FILE > /dev/null 2>&1
 			fi
 			
 			if [ $music == 1 ] && [ $musicselected == 1 ] ; then
