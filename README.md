@@ -38,4 +38,4 @@ If you are planning to use firefox, mplayer or chrome, please make sure that the
 	
 + E.g. If you have downloaded the zip file inside the ~/Downloads directory then run this command
 	
-	*```bash ~/Downloads/flipinstock/src/flipinstock-gui```* 
+	*```bash ~/Downloads/flipinstock-master/src/flipinstock-gui```* 
