@@ -29,9 +29,9 @@ selectmusic(){
 		zenity --info \
 		--title="Flipinstock" \
 		--no-wrap \
-		--text="Please select audio file with short time duration.\nFew short audio files are present in flipinstock directory."
+		--text="Please select an audio file with short time duration.\nFew short audio files are present in flipinstock directory."
 		
-		FILE=`zenity --file-selection --title="Select a Music File for alarm tone"`
+		FILE=`zenity --file-selection --title="Select an audio file for alarm tone"`
 
 		case $? in
 			0)	
